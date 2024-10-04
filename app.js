@@ -1,0 +1,14 @@
+const express = require("express");
+const app = express();
+app.use(express.json());
+const bookRoutes = require("./routes/book.routes.js");
+const userRoutes = require("./routes/user.routes.js");
+const transactionRoutes = require("./routes/transaction.routes.js");
+const healthCheckRoutes = require("./routes/healthcheck.routes.js");
+app.use("/api/books", bookRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/transactions", transactionRoutes);
+app.use("/api", healthCheckRoutes);
+const errorHandler = require("./middleware/errorhandling.middleware.js");
+app.use(errorHandler);
+module.exports = { app };
