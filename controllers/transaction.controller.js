@@ -5,6 +5,7 @@ const { isValidObjectId } = require("mongoose");
 const updateIssueDate = async (req, res, next) => {
   try {
     const { book_name, user_id, issueDate } = req.body;
+    console.log(req.body);
     if (!book_name || book_name.length < 0) {
       throw new CustomErrorHandler(400, "Book Name Is Required");
     }
@@ -36,9 +37,7 @@ const updateIssueDate = async (req, res, next) => {
     }
     const bookAvailable = transactionRelatedToBook.filter(
       (book) =>
-        !(
-          book.book_return_date && book.book_issue_date < book.book_return_date
-        ),
+        !(book.book_return_date && book.book_issue_date < book.book_return_date)
     );
     if (bookAvailable.length !== 0) {
       throw new CustomErrorHandler(200, "Book is Not available");
@@ -85,12 +84,12 @@ const updateReturnDate = async (req, res, next) => {
       (book) =>
         book.book_return_date === null &&
         book.user_id.toString() === user_id.toString() &&
-        returnDateTypeDate.getTime() - book.book_issue_date.getTime() > 0,
+        returnDateTypeDate.getTime() - book.book_issue_date.getTime() > 0
     );
     if (returnBook.length === 0) {
       throw new CustomErrorHandler(
         400,
-        "No Book Issued With this Name Or Return date might be Wrong",
+        "No Book Issued With this Name Or Return date might be Wrong"
       );
     }
     const issuedDate = returnBook[0].book_issue_date;
@@ -103,7 +102,7 @@ const updateReturnDate = async (req, res, next) => {
       {
         book_return_date: returnDateTypeDate,
         revenue_generated: daysDifference * bookInfo.book_rent_per_day,
-      },
+      }
     );
     return res.status(200).json({
       success: true,
@@ -201,12 +200,18 @@ const getPeopleCountStatusIfNotIssued = async (req, res, next) => {
         },
       },
     ]);
-    console.log(transactionRelatedToBook);
+    if (transactionRelatedToBook.length === 0) {
+      throw new CustomErrorHandler(
+        400,
+        "No Book was Issued in Past with This name"
+      );
+    }
     return res.status(200).json({
       success: true,
       message: "Total Rent Counted Successfully",
       data: {
-        transactionRelatedToBook,
+        transactionRelatedToBook: transactionRelatedToBook[0],
+        total_count: transactionRelatedToBook[0].users_who_issued.length,
       },
     });
   } catch (err) {
